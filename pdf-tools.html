@@ -19,17 +19,21 @@
     footer { background: #004aad; color: white; text-align: center; padding: 15px; margin-top: 30px; }
     input[type=file], button { margin-top: 10px; padding: 10px; border-radius: 5px; border: none; cursor: pointer; }
     button { background: #004aad; color: white; }
+    .output img { max-width: 100%; margin: 10px 0; border: 1px solid #ccc; }
+    .download-btn { display: inline-block; margin: 5px; background: #28a745; color: white; padding: 6px 12px; border-radius: 5px; text-decoration: none; font-size: 0.9em; }
   </style>
   <!-- Google AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
   <script>
     (adsbygoogle = window.adsbygoogle || []).push({});
   </script>
-  <!-- PDF.js and libraries -->
+  <!-- Libraries (all client-side) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 </head>
 <body>
   <header>
@@ -53,12 +57,15 @@
         <p>Convert PDF pages to images in your browser.</p>
         <input type="file" id="pdfToImg" accept="application/pdf">
         <button onclick="convertPdfToImg()">Convert</button>
+        <div id="pdfToImgOutput" class="output"></div>
+        <button id="downloadAllBtn" style="display:none; margin-top:10px;" onclick="downloadAllImages()">Download All as ZIP</button>
       </div>
       <div class="tool">
         <h2>JPG/PNG to PDF</h2>
         <p>Merge images into a single PDF.</p>
         <input type="file" id="imgToPdf" accept="image/*" multiple>
         <button onclick="convertImgToPdf()">Convert</button>
+        <div id="imgToPdfOutput" class="output"></div>
       </div>
       <div class="tool">
         <h2>PDF to Excel</h2>
@@ -133,12 +140,133 @@
   </footer>
 
   <script>
+    // Properly initialize pdfjsLib client-side
+    const pdfjsLib = window['pdfjs-dist/build/pdf'];
+    if (pdfjsLib) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc =
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.worker.min.js';
+    }
+
+    let generatedImages = [];
+    let currentPdfName = "";
+
     async function convertPdfToImg() {
-      alert("Client-side PDF to Image conversion placeholder.");
+      const input = document.getElementById('pdfToImg');
+      const output = document.getElementById('pdfToImgOutput');
+      const downloadAllBtn = document.getElementById('downloadAllBtn');
+      output.innerHTML = '';
+      generatedImages = [];
+      downloadAllBtn.style.display = 'none';
+
+      if (!input.files.length) {
+        alert('Please select a PDF file.');
+        return;
+      }
+      const file = input.files[0];
+      currentPdfName = file.name.replace(/\.pdf$/i, "");
+      const fileReader = new FileReader();
+      fileReader.onload = async function() {
+        const typedarray = new Uint8Array(this.result);
+        const pdf = await pdfjsLib.getDocument({ data: typedarray }).promise;
+        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+          const page = await pdf.getPage(pageNum);
+          const viewport = page.getViewport({ scale: 1.5 });
+          const canvas = document.createElement('canvas');
+          const context = canvas.getContext('2d');
+          canvas.height = viewport.height;
+          canvas.width = viewport.width;
+          await page.render({ canvasContext: context, viewport }).promise;
+          const imgData = canvas.toDataURL('image/png');
+          generatedImages.push({ data: imgData, name: `${currentPdfName}-page-${pageNum}.png` });
+
+          const img = document.createElement('img');
+          img.src = imgData;
+          output.appendChild(img);
+
+          const downloadLink = document.createElement('a');
+          downloadLink.href = imgData;
+          downloadLink.download = `${currentPdfName}-page-${pageNum}.png`;
+          downloadLink.className = 'download-btn';
+          downloadLink.textContent = `Download Page ${pageNum}`;
+          output.appendChild(downloadLink);
+        }
+        if (generatedImages.length > 1) {
+          downloadAllBtn.style.display = 'inline-block';
+        }
+      };
+      fileReader.readAsArrayBuffer(file);
     }
+
+    async function downloadAllImages() {
+      if (generatedImages.length === 0) return;
+      const zip = new JSZip();
+      generatedImages.forEach(img => {
+        const base64Data = img.data.split(',')[1];
+        zip.file(img.name, base64Data, { base64: true });
+      });
+      const content = await zip.generateAsync({ type: 'blob' });
+      saveAs(content, `${currentPdfName || 'pdf'}-images.zip`);
+    }
+
     async function convertImgToPdf() {
-      alert("Client-side Image to PDF conversion placeholder.");
+      const input = document.getElementById('imgToPdf');
+      const output = document.getElementById('imgToPdfOutput');
+      output.innerHTML = '';
+
+      if (!input.files.length) {
+        alert('Please select image files.');
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF();
+
+      for (let i = 0; i < input.files.length; i++) {
+        const file = input.files[i];
+        const imgData = await readFileAsDataURL(file);
+        const img = new Image();
+        img.src = imgData;
+
+        await new Promise(resolve => {
+          img.onload = () => {
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+
+            let imgWidth = img.width;
+            let imgHeight = img.height;
+            const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
+            imgWidth *= ratio;
+            imgHeight *= ratio;
+
+            pdf.addImage(img, 'PNG', (pageWidth - imgWidth) / 2, (pageHeight - imgHeight) / 2, imgWidth, imgHeight);
+
+            if (i < input.files.length - 1) {
+              pdf.addPage();
+            }
+            resolve();
+          };
+        });
+      }
+
+      const pdfBlob = pdf.output('blob');
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.download = 'images-to-pdf.pdf';
+      link.textContent = 'Download PDF';
+      link.className = 'download-btn';
+      output.appendChild(link);
     }
+
+    function readFileAsDataURL(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
     async function convertPdfToExcel() {
       alert("Client-side PDF to Excel conversion placeholder.");
     }
