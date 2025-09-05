@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Free all-in-one PDF tools: Convert, Edit, Protect, Unlock, Watermark, Sign PDFs online. Mobile-friendly, fast, and secure." />
+  <title>All-in-One PDF Toolkit | Free Online PDF Tools</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f8f9fa; }
+    header { background: #004aad; color: white; padding: 20px; text-align: center; }
+    h1 { margin: 0; font-size: 1.8em; }
+    .container { max-width: 1000px; margin: auto; padding: 20px; }
+    .tool-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+    .tool { background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 20px; text-align: center; }
+    .tool h2 { font-size: 1.2em; margin-bottom: 10px; }
+    .tool p { font-size: 0.9em; color: #555; }
+    .ads-banner { margin: 20px auto; text-align: center; }
+    .ads-banner ins { display: inline-block; width: 100%; max-width: 728px; height: 90px; }
+    footer { background: #004aad; color: white; text-align: center; padding: 15px; margin-top: 30px; }
+    input[type=file], button { margin-top: 10px; padding: 10px; border-radius: 5px; border: none; cursor: pointer; }
+    button { background: #004aad; color: white; }
+  </style>
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+  <!-- PDF.js and libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+  <header>
+    <h1>All-in-One Free PDF Toolkit</h1>
+    <p>Convert, Edit, Protect, Sign, and Manage PDFs online</p>
+  </header>
+
+  <div class="container">
+    <!-- Top Ad Placement -->
+    <div class="ads-banner">
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-xxxx"
+           data-ad-slot="1111111111"
+           data-ad-format="auto"></ins>
+    </div>
+
+    <div class="tool-grid">
+      <div class="tool">
+        <h2>PDF to JPG/PNG</h2>
+        <p>Convert PDF pages to images in your browser.</p>
+        <input type="file" id="pdfToImg" accept="application/pdf">
+        <button onclick="convertPdfToImg()">Convert</button>
+      </div>
+      <div class="tool">
+        <h2>JPG/PNG to PDF</h2>
+        <p>Merge images into a single PDF.</p>
+        <input type="file" id="imgToPdf" accept="image/*" multiple>
+        <button onclick="convertImgToPdf()">Convert</button>
+      </div>
+      <div class="tool">
+        <h2>PDF to Excel</h2>
+        <p>Extract tables to Excel.</p>
+        <input type="file" id="pdfToExcel" accept="application/pdf">
+        <button onclick="convertPdfToExcel()">Convert</button>
+      </div>
+      <div class="tool">
+        <h2>PDF to PowerPoint</h2>
+        <p>Convert PDF into editable PPTX.</p>
+        <input type="file" id="pdfToPpt" accept="application/pdf">
+        <button onclick="convertPdfToPpt()">Convert</button>
+      </div>
+      <div class="tool">
+        <h2>PDF Edit</h2>
+        <p>Add text and annotations.</p>
+        <input type="file" id="pdfEdit" accept="application/pdf">
+        <button onclick="editPdf()">Edit</button>
+      </div>
+      <div class="tool">
+        <h2>PDF Sign</h2>
+        <p>Sign PDF electronically.</p>
+        <input type="file" id="pdfSign" accept="application/pdf">
+        <button onclick="signPdf()">Sign</button>
+      </div>
+      <div class="tool">
+        <h2>PDF Protect</h2>
+        <p>Add password protection.</p>
+        <input type="file" id="pdfProtect" accept="application/pdf">
+        <button onclick="protectPdf()">Protect</button>
+      </div>
+      <div class="tool">
+        <h2>PDF Unlock</h2>
+        <p>Remove password (if permitted).</p>
+        <input type="file" id="pdfUnlock" accept="application/pdf">
+        <button onclick="unlockPdf()">Unlock</button>
+      </div>
+      <div class="tool">
+        <h2>PDF Rotate</h2>
+        <p>Rotate PDF pages.</p>
+        <input type="file" id="pdfRotate" accept="application/pdf">
+        <button onclick="rotatePdf()">Rotate</button>
+      </div>
+      <div class="tool">
+        <h2>PDF Watermark</h2>
+        <p>Add text or image watermark.</p>
+        <input type="file" id="pdfWatermark" accept="application/pdf">
+        <button onclick="watermarkPdf()">Watermark</button>
+      </div>
+    </div>
+
+    <!-- Mid-page Ad Placement -->
+    <div class="ads-banner">
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-xxxx"
+           data-ad-slot="2222222222"
+           data-ad-format="auto"></ins>
+    </div>
+  </div>
+
+  <footer>
+    <p>© 2025 All-in-One PDF Toolkit. Free online PDF tools. | SEO & Mobile Friendly</p>
+    <!-- Bottom Ad Placement -->
+    <div class="ads-banner">
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-xxxx"
+           data-ad-slot="3333333333"
+           data-ad-format="auto"></ins>
+    </div>
+  </footer>
+
+  <script>
+    async function convertPdfToImg() {
+      alert("Client-side PDF to Image conversion placeholder.");
+    }
+    async function convertImgToPdf() {
+      alert("Client-side Image to PDF conversion placeholder.");
+    }
+    async function convertPdfToExcel() {
+      alert("Client-side PDF to Excel conversion placeholder.");
+    }
+    async function convertPdfToPpt() {
+      alert("Client-side PDF to PowerPoint conversion placeholder.");
+    }
+    async function editPdf() {
+      alert("Client-side PDF editing placeholder.");
+    }
+    async function signPdf() {
+      alert("Client-side PDF signing placeholder.");
+    }
+    async function protectPdf() {
+      alert("Client-side PDF password protection placeholder.");
+    }
+    async function unlockPdf() {
+      alert("Client-side PDF unlock placeholder.");
+    }
+    async function rotatePdf() {
+      alert("Client-side PDF rotation placeholder.");
+    }
+    async function watermarkPdf() {
+      alert("Client-side PDF watermarking placeholder.");
+    }
+  </script>
+</body>
+</html>
