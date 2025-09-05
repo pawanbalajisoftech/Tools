@@ -3,16 +3,15 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Free PDF Compressor (Client‑Side) — Fast, Private & Mobile‑Friendly</title>
-  <meta name="description" content="Compress PDF files entirely in your browser. No uploads. Adjustable quality, DPI, grayscale, page range, and more. SEO‑optimized and mobile‑friendly." />
+  <title>Free PDF Compressor (Client-Side) — Fast, Private & Mobile-Friendly</title>
+  <meta name="description" content="Compress PDF files entirely in your browser. No uploads. Adjustable quality, DPI, grayscale, page range, and more. SEO-optimized and mobile-friendly." />
   <link rel="canonical" href="https://example.com/pdf-compressor" />
-  <meta property="og:title" content="Free PDF Compressor (Client‑Side)" />
+  <meta property="og:title" content="Free PDF Compressor (Client-Side)" />
   <meta property="og:description" content="Compress PDFs privately in your browser with quality, DPI and grayscale controls. No server uploads." />
   <meta property="og:type" content="website" />
   <meta property="og:image" content="https://example.com/og-image.png" />
   <meta name="robots" content="index,follow" />
 
-  <!-- Schema.org JSON‑LD for SEO -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -26,7 +25,6 @@
   }
   </script>
 
-  <!-- Tailwind CSS (CDN) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     .ad-placeholder { background: repeating-linear-gradient(45deg,#f3f4f6,#f3f4f6 10px,#e5e7eb 10px,#e5e7eb 20px); }
@@ -34,7 +32,6 @@
     canvas { max-width: 100%; height: auto; }
   </style>
 
-  <!-- PDF.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.7.76/pdf.min.js"></script>
   <script>
     if (window['pdfjsLib']) {
@@ -42,7 +39,6 @@
     }
   </script>
 
-  <!-- jsPDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body class="bg-white text-gray-900 antialiased">
@@ -50,7 +46,7 @@
 
   <header class="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-gray-200">
     <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-      <h1 class="text-xl sm:text-2xl font-semibold tracking-tight">Client‑Side PDF Compressor</h1>
+      <h1 class="text-xl sm:text-2xl font-semibold tracking-tight">Client-Side PDF Compressor</h1>
       <nav class="hidden md:flex gap-6 text-sm" aria-label="Primary">
         <a href="#features" class="hover:underline">Features</a>
         <a href="#how" class="hover:underline">How it works</a>
@@ -59,7 +55,6 @@
     </div>
   </header>
 
-  <!-- TOP AD SLOT -->
   <div class="ad-placeholder" role="complementary" aria-label="Top advertisement" id="ad-top">
     <div class="max-w-6xl mx-auto px-4 py-6 text-center text-gray-600">Top Banner Ad 728x90 (replace with your ad code)</div>
   </div>
@@ -74,10 +69,13 @@
           <input id="file" type="file" accept="application/pdf" class="hidden" />
           <p class="text-sm">Drag & drop your PDF here, or <span class="underline">browse</span></p>
           <p id="fileInfo" class="mt-2 text-xs text-gray-500">Max ~200MB (device dependent)</p>
+          <div id="uploadProgressWrap" class="mt-4 hidden">
+            <div class="flex justify-between text-xs mb-1"><span>Uploading…</span><span id="uploadPct">0%</span></div>
+            <div class="w-full bg-gray-200 rounded-full h-2"><div id="uploadBar" class="h-2 rounded-full bg-blue-600" style="width:0%"></div></div>
+          </div>
         </div>
 
         <form class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4" id="optionsForm">
-          <!-- Options here -->
           <div class="md:col-span-2">
             <button id="compressBtn" type="button" class="w-full md:w-auto inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-black text-white hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
               <span>Compress PDF</span>
@@ -109,7 +107,7 @@
 
   <footer class="border-t border-gray-200">
     <div class="max-w-6xl mx-auto px-4 py-8 text-sm text-gray-600 flex flex-col sm:flex-row items-center justify-between gap-3">
-      <p>© <span id="year"></span> Client‑Side PDF Compressor</p>
+      <p>© <span id="year"></span> Client-Side PDF Compressor</p>
     </div>
   </footer>
 
@@ -123,6 +121,10 @@
     const newSizeEl = document.getElementById('newSize');
     const downloadBtn = document.getElementById('downloadBtn');
     const resetBtn = document.getElementById('resetBtn');
+
+    const uploadWrap = document.getElementById('uploadProgressWrap');
+    const uploadBar = document.getElementById('uploadBar');
+    const uploadPct = document.getElementById('uploadPct');
 
     let loadedPdf = null;
     let loadedFile = null;
@@ -138,8 +140,24 @@
     dropzone.addEventListener('click', ()=> fileInput.click());
     fileInput.addEventListener('change', e=>{
       const f = e.target.files?.[0];
-      if(f) handleFile(f);
+      if(f) simulateUpload(f);
     });
+
+    function simulateUpload(file){
+      uploadWrap.classList.remove('hidden');
+      uploadBar.style.width = '0%';
+      uploadPct.textContent = '0%';
+      let progress = 0;
+      const interval = setInterval(()=>{
+        progress += 10;
+        uploadBar.style.width = progress + '%';
+        uploadPct.textContent = progress + '%';
+        if(progress >= 100){
+          clearInterval(interval);
+          handleFile(file);
+        }
+      }, 100);
+    }
 
     async function handleFile(file){
       if(file.type !== 'application/pdf'){
@@ -157,11 +175,11 @@
       origPagesEl.textContent = loadedPdf.numPages;
 
       compressBtn.disabled = false;
+      uploadWrap.classList.add('hidden');
     }
 
     async function compress(){
       if(!loadedPdf || !loadedFile) return;
-      // compression logic here...
       alert('Compression would run here.');
     }
 
@@ -170,6 +188,9 @@
       loadedPdf = null; loadedFile = null; fileInput.value = '';
       fileInfo.textContent = 'Max ~200MB (device dependent)';
       compressBtn.disabled = true;
+      uploadWrap.classList.add('hidden');
+      uploadBar.style.width = '0%';
+      uploadPct.textContent = '0%';
     });
 
     document.getElementById('year').textContent = new Date().getFullYear();
